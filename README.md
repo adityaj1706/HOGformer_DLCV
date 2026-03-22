@@ -165,16 +165,13 @@ python test.py
 If you use our code or method in your research, please cite our paper:
 
 ```bibtex
-@article{wu2025beyond,
-  title={Beyond Degradation Conditions: All-in-One Image Restoration via HOG Transformers},
+@inproceedings{wu2026gradient,
+  title={Gradient as conditions: Rethinking HOG for all-in-one image restoration},
   author={Wu, Jiawei and Yang, Zhifei and Wang, Zhe and Jin, Zhi},
-  journal={arXiv preprint arXiv:2504.09377},
-  year={2025}
-}
-@article{lastname2023paper,
-  title={Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration},
-  author={Wu, Jiawei and Yang, Zhifei and Wang, Zhe and Jin, Zhi},
-  journal={AAAI},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={40},
+  number={13},
+  pages={10682--10690},
   year={2026}
 }
 ```
