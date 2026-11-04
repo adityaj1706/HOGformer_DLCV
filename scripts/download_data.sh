@@ -21,7 +21,8 @@ pip install -q gdown
 #      ALLWEATHER_ZIP=/content/drive/MyDrive/allweather.zip bash scripts/download_data.sh /content/data
 #    or (no Drive mount, e.g. Kaggle) pass the Drive file id of your own shared copy:
 #      ALLWEATHER_ID=<file id> bash scripts/download_data.sh /tmp/data
-if [ ! -d "$W/train/gt" ]; then
+# Set SKIP_TRAIN=1 to skip the 11 GB training set (evaluation only).
+if [ -z "${SKIP_TRAIN:-}" ] && [ ! -d "$W/train/gt" ]; then
   if [ -n "${ALLWEATHER_ZIP:-}" ]; then
     unzip -q -o "$ALLWEATHER_ZIP" -d "$W/train"
   else
@@ -76,7 +77,7 @@ check() { # dir_gt dir_in expected
   fi
   echo "ok  $3  $1"
 }
-check "$W/train/gt" "$W/train/input" 18069
+if [ -z "${SKIP_TRAIN:-}" ]; then check "$W/train/gt" "$W/train/input" 18069; fi
 check "$W/test/Test1/gt" "$W/test/Test1/input" 750
 check "$W/test/RainDrop/test_a/gt" "$W/test/RainDrop/test_a/input" 58
 if [ -z "${SKIP_SNOW:-}" ]; then
