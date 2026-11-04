@@ -129,9 +129,13 @@ def get_root_logger(logger_name='basicsr', log_level=logging.INFO, log_file=None
         return logger
 
     format_str = '%(asctime)s %(levelname)s: %(message)s'
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(logging.Formatter(format_str))
-    logger.addHandler(stream_handler)
+    # This module can be imported under two names (`utils` and `basicsr.utils`),
+    # each with its own `initialized_logger`; avoid adding a second console
+    # handler to the same logging.Logger (which printed every line twice).
+    if not any(type(h) is logging.StreamHandler for h in logger.handlers):
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(logging.Formatter(format_str))
+        logger.addHandler(stream_handler)
     logger.propagate = False
     rank, _ = get_dist_info()
     if rank != 0:

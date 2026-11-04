@@ -231,6 +231,21 @@ def main():
     # create message logger (formatted outputs)
     msg_logger = MessageLogger(opt, current_iter, tb_logger)
 
+    # --- extra diagnostics (logging only; no effect on training) ---
+    try:
+        _net = model.net_g.module if hasattr(model.net_g, 'module') else model.net_g
+        logger.info(f'Model parameters: {sum(p.numel() for p in _net.parameters()) / 1e6:.2f} M')
+        if torch.cuda.is_available():
+            logger.info(f'GPU: {torch.cuda.get_device_name(0)} | torch {torch.__version__} | '
+                        f'cudnn.benchmark={torch.backends.cudnn.benchmark}')
+        else:
+            logger.info(f'No CUDA device | torch {torch.__version__}')
+    except Exception as e:
+        logger.warning(f'diagnostics failed: {e}')
+    progress_file = osp.join(opt['path']['experiments_root'], 'progress.txt')
+    last_psnr = {}
+    hb_time, hb_iter = time.time(), current_iter
+
     # dataloader prefetcher
     prefetch_mode = opt['datasets']['train'].get('prefetch_mode')
     if prefetch_mode is None or prefetch_mode == 'cpu':
@@ -339,6 +354,24 @@ def main():
                 log_vars.update({'time': iter_time, 'data_time': data_time})
                 log_vars.update(model.get_current_log())
                 msg_logger(log_vars)
+                if any(not math.isfinite(v) for v in model.get_current_log().values()):
+                    logger.warning(f'Non-finite loss at iter {current_iter}: {dict(model.get_current_log())}')
+
+            # heartbeat every 100 iters: speed, peak GPU memory, ETA, last PSNR; also written to progress.txt
+            if current_iter % 100 == 0:
+                _now = time.time()
+                _its = (current_iter - hb_iter) / max(_now - hb_time, 1e-9)
+                hb_time, hb_iter = _now, current_iter
+                _mem = torch.cuda.max_memory_allocated() / 2**30 if torch.cuda.is_available() else 0.0
+                _eta = datetime.timedelta(seconds=int(max(total_iters - current_iter, 0) / max(_its, 1e-9)))
+                _line = (f'[progress] iter {current_iter}/{total_iters} | {_its:.2f} it/s | '
+                         f'peak GPU mem {_mem:.1f} GiB | eta {_eta} | last psnr {last_psnr}')
+                logger.info(_line)
+                try:
+                    with open(progress_file, 'w') as _f:
+                        _f.write(time.strftime('%Y-%m-%d %H:%M:%S ') + _line + '\n')
+                except OSError:
+                    pass
 
             # save models and training states
             if current_iter % opt['logger']['save_checkpoint_freq'] == 0:
@@ -352,8 +385,15 @@ def main():
                 # wheather use uint8 image to compute metrics
                 use_image = opt['val'].get('use_image', True)
                 for val_name, val_loader in val_loaders.items():
+                    logger.info(f'Validation {val_name} starting at iter {current_iter} ({len(val_loader)} batches)...')
+                    _t0 = time.time()
                     metric_out = model.validation(val_loader, current_iter, tb_logger,
                                  opt['val']['save_img'], rgb2bgr, use_image )
+                    logger.info(f'Validation {val_name} finished in {time.time() - _t0:.0f}s')
+                    try:
+                        last_psnr[val_name] = round(float(metric_out), 3)
+                    except (TypeError, ValueError):
+                        pass
 #                metric_out = model.metric_results.items()[opt['val']['metrics'].keys()[0]]
                     if metric_out != 0:
                         loss_writer.add_scalar('psnr_'+val_name, metric_out, current_iter)
