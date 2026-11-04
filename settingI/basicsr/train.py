@@ -235,6 +235,8 @@ def main():
     try:
         _net = model.net_g.module if hasattr(model.net_g, 'module') else model.net_g
         logger.info(f'Model parameters: {sum(p.numel() for p in _net.parameters()) / 1e6:.2f} M')
+        _att = [m for m in _net.modules() if hasattr(m, 'soft_vote')]
+        logger.info(f'HOG soft voting enabled in {sum(bool(m.soft_vote) for m in _att)}/{len(_att)} attention blocks')
         if torch.cuda.is_available():
             logger.info(f'GPU: {torch.cuda.get_device_name(0)} | torch {torch.__version__} | '
                         f'cudnn.benchmark={torch.backends.cudnn.benchmark}')
