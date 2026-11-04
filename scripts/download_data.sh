@@ -52,7 +52,8 @@ fi
 
 # 4) Snow100K-S / Snow100K-L test sets (Histoformer's mirror; the original
 #    Snow100K archive often hits Google Drive's download quota)
-if [ ! -d "$W/test/Snow100K-Test/Snow100K-L/gt" ]; then
+# Set SKIP_SNOW=1 to skip this step (not needed for training).
+if [ -z "${SKIP_SNOW:-}" ] && [ ! -d "$W/test/Snow100K-Test/Snow100K-L/gt" ]; then
   gdown --folder 1kLPWAev5f6OutKFALhxthuO1XCF5U1Yu -O "$TMP/snow"
   for s in S L; do
     d="$W/test/Snow100K-Test/Snow100K-$s"
@@ -76,6 +77,8 @@ check() { # dir_gt dir_in expected
 check "$W/train/gt" "$W/train/input" 18069
 check "$W/test/Test1/gt" "$W/test/Test1/input" 750
 check "$W/test/RainDrop/test_a/gt" "$W/test/RainDrop/test_a/input" 58
-check "$W/test/Snow100K-Test/Snow100K-S/gt" "$W/test/Snow100K-Test/Snow100K-S/synthetic" 16611
-check "$W/test/Snow100K-Test/Snow100K-L/gt" "$W/test/Snow100K-Test/Snow100K-L/synthetic" 16801
+if [ -z "${SKIP_SNOW:-}" ]; then
+  check "$W/test/Snow100K-Test/Snow100K-S/gt" "$W/test/Snow100K-Test/Snow100K-S/synthetic" 16611
+  check "$W/test/Snow100K-Test/Snow100K-L/gt" "$W/test/Snow100K-Test/Snow100K-L/synthetic" 16801
+fi
 echo "Data ready under $W"
