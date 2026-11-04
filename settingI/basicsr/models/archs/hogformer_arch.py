@@ -1,4 +1,5 @@
 import torch
+import torch.utils.checkpoint
 import torch.nn as nn
 import torch.nn.functional as F
 import numbers
@@ -139,12 +140,20 @@ class TransformerBlock(nn.Module):
         self.norm_g = LayerNorm(dim, LayerNorm_type)
         self.ffn = FFN_DIFF(dim, ffn_expansion_factor, bias)
         self.norm_ff1 = LayerNorm(dim, LayerNorm_type)
+        # Activation checkpointing: trade ~30% extra compute for far less memory.
+        # Mathematically identical; set via HOGformer(use_checkpoint=True).
+        self.use_checkpoint = False
 
-    def forward(self, x):
+    def _forward(self, x):
         f_spatial = self.attn_g_spatial(self.norm_g(x))
         x = x + f_spatial
         x_out = x + self.ffn(self.norm_ff1(x))
         return x_out
+
+    def forward(self, x):
+        if self.use_checkpoint and self.training and x.requires_grad:
+            return torch.utils.checkpoint.checkpoint(self._forward, x, use_reentrant=False)
+        return self._forward(x)
 
 ##########################################################################
 class Attention_DHOGSA(nn.Module):
@@ -355,7 +364,8 @@ class HOGformer(nn.Module):
         ffn_expansion_factor = 2.66,
         bias = False,
         LayerNorm_type = 'WithBias',   ## Other option 'BiasFree'
-        dual_pixel_task = False        ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        dual_pixel_task = False,       ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        use_checkpoint = False         ## activation checkpointing to cut GPU memory (same math)
     ):
 
         super(HOGformer, self).__init__()
@@ -403,6 +413,10 @@ class HOGformer(nn.Module):
         ###########################
             
         self.output = Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
+
+        for m in self.modules():
+            if isinstance(m, TransformerBlock):
+                m.use_checkpoint = use_checkpoint
 
     def forward(self, inp_img, ):
 
