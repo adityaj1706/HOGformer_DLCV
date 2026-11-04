@@ -19,11 +19,13 @@ pip install -q gdown
 #    If Google Drive says "Too many users have viewed or downloaded this file",
 #    copy the file into your own Drive and pass it in:
 #      ALLWEATHER_ZIP=/content/drive/MyDrive/allweather.zip bash scripts/download_data.sh /content/data
+#    or (no Drive mount, e.g. Kaggle) pass the Drive file id of your own shared copy:
+#      ALLWEATHER_ID=<file id> bash scripts/download_data.sh /tmp/data
 if [ ! -d "$W/train/gt" ]; then
   if [ -n "${ALLWEATHER_ZIP:-}" ]; then
     unzip -q -o "$ALLWEATHER_ZIP" -d "$W/train"
   else
-    gdown 1tfeBnjZX1wIhIFPl6HOzzOKOyo0GdGHl -O "$TMP/allweather.zip"
+    gdown "${ALLWEATHER_ID:-1tfeBnjZX1wIhIFPl6HOzzOKOyo0GdGHl}" -O "$TMP/allweather.zip"
     unzip -q -o "$TMP/allweather.zip" -d "$W/train"
     rm -f "$TMP/allweather.zip"
   fi
