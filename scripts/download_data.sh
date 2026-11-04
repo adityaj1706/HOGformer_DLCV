@@ -16,10 +16,17 @@ mkdir -p "$W/train" "$W/test" "$TMP"
 pip install -q gdown
 
 # 1) Training set: All-Weather composite (TransWeather / Histoformer)
+#    If Google Drive says "Too many users have viewed or downloaded this file",
+#    copy the file into your own Drive and pass it in:
+#      ALLWEATHER_ZIP=/content/drive/MyDrive/allweather.zip bash scripts/download_data.sh /content/data
 if [ ! -d "$W/train/gt" ]; then
-  gdown 1tfeBnjZX1wIhIFPl6HOzzOKOyo0GdGHl -O "$TMP/allweather.zip"
-  unzip -q -o "$TMP/allweather.zip" -d "$W/train"
-  rm -f "$TMP/allweather.zip"
+  if [ -n "${ALLWEATHER_ZIP:-}" ]; then
+    unzip -q -o "$ALLWEATHER_ZIP" -d "$W/train"
+  else
+    gdown 1tfeBnjZX1wIhIFPl6HOzzOKOyo0GdGHl -O "$TMP/allweather.zip"
+    unzip -q -o "$TMP/allweather.zip" -d "$W/train"
+    rm -f "$TMP/allweather.zip"
+  fi
 fi
 
 # 2) Outdoor-Rain Test1 (link from the Histoformer README)
