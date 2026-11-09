@@ -10,8 +10,8 @@ datasets:
   train:
     name: TrainSet
     type: Dataset_PairedImage
-    dataroot_gt: /data/wjw/pro_ject/weather/train/gt/
-    dataroot_lq: /data/wjw/pro_ject/weather/train/input/
+    dataroot_gt: /home/user/data/weather/train/gt/
+    dataroot_lq: /home/user/data/weather/train/input/
     geometric_augs: true
 
     filename_tmpl: '{}'
@@ -40,32 +40,32 @@ datasets:
     dataset_enlarge_ratio: 1
     prefetch_mode: ~
 
-  val_snow_s:
-    name: ValSet_Snow100K-S
-    type: Dataset_PairedImage
-    dataroot_gt: /data/wjw/pro_ject/weather/test/Snow100K-Test/Snow100K-S/gt/
-    dataroot_lq: /data/wjw/pro_ject/weather/test/Snow100K-Test/Snow100K-S/synthetic/
-    io_backend:
-      type: disk
-  val_snow_l:
-    name: ValSet_Snow100K-L
-    type: Dataset_PairedImage
-    dataroot_gt: /data/wjw/pro_ject/weather/test/Snow100K-Test/Snow100K-L/gt/
-    dataroot_lq: /data/wjw/pro_ject/weather/test/Snow100K-Test/Snow100K-L/synthetic/
-    io_backend:
-      type: disk
+#   val_snow_s:
+#     name: ValSet_Snow100K-S
+#     type: Dataset_PairedImage
+#     dataroot_gt: /home/user/data/weather/test/Snow100K-Test/Snow100K-S/gt/
+#     dataroot_lq: /home/user/data/weather/test/Snow100K-Test/Snow100K-S/synthetic/
+#     io_backend:
+#       type: disk
+#   val_snow_l:
+#     name: ValSet_Snow100K-L
+#     type: Dataset_PairedImage
+#     dataroot_gt: /home/user/data/weather/test/Snow100K-Test/Snow100K-L/gt/
+#     dataroot_lq: /home/user/data/weather/test/Snow100K-Test/Snow100K-L/synthetic/
+#     io_backend:
+#       type: disk
   val_test1:
     name: ValSet_Test1
     type: Dataset_PairedImage
-    dataroot_gt: /data/wjw/pro_ject/weather/test/Test1/gt/
-    dataroot_lq: /data/wjw/pro_ject/weather/test/Test1/input/
+    dataroot_gt: /home/user/data/weather/test/Test1/gt/
+    dataroot_lq: /home/user/data/weather/test/Test1/input/
     io_backend:
       type: disk
   val_raindrop:
     name: ValSet_RainDrop
     type: Dataset_PairedImage
-    dataroot_gt: /data/wjw/pro_ject/weather/test/RainDrop/test_a/gt/
-    dataroot_lq: /data/wjw/pro_ject/weather/test/RainDrop/test_a/input/
+    dataroot_gt: /home/user/data/weather/test/RainDrop/test_a/gt/
+    dataroot_lq: /home/user/data/weather/test/RainDrop/test_a/input/
     io_backend:
       type: disk
 

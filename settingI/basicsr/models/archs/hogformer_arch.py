@@ -1,4 +1,5 @@
 import torch
+import torch.utils.checkpoint
 import torch.nn as nn
 import torch.nn.functional as F
 import numbers
@@ -139,12 +140,20 @@ class TransformerBlock(nn.Module):
         self.norm_g = LayerNorm(dim, LayerNorm_type)
         self.ffn = FFN_DIFF(dim, ffn_expansion_factor, bias)
         self.norm_ff1 = LayerNorm(dim, LayerNorm_type)
+        # Activation checkpointing: trade ~30% extra compute for far less memory.
+        # Mathematically identical; set via HOGformer(use_checkpoint=True).
+        self.use_checkpoint = False
 
-    def forward(self, x):
+    def _forward(self, x):
         f_spatial = self.attn_g_spatial(self.norm_g(x))
         x = x + f_spatial
         x_out = x + self.ffn(self.norm_ff1(x))
         return x_out
+
+    def forward(self, x):
+        if self.use_checkpoint and self.training and x.requires_grad:
+            return torch.utils.checkpoint.checkpoint(self._forward, x, use_reentrant=False)
+        return self._forward(x)
 
 ##########################################################################
 class Attention_DHOGSA(nn.Module):
@@ -164,7 +173,10 @@ class Attention_DHOGSA(nn.Module):
         sobel_y = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32).reshape(1, 1, 3, 3)
         self.register_buffer('sobel_x', sobel_x.repeat(dim, 1, 1, 1))
         self.register_buffer('sobel_y', sobel_y.repeat(dim, 1, 1, 1))
-        
+        # Proposed modification: soft (linear) orientation voting for the HOG descriptor.
+        # Off by default (= original hard binning); set via HOGformer(soft_vote=True).
+        self.soft_vote = False
+
     def pad(self, x, factor):
         hw = x.shape[-1]
         t_pad = [0, 0] if hw % factor == 0 else [0, (hw//factor+1)*factor-hw]
@@ -233,14 +245,31 @@ class Attention_DHOGSA(nn.Module):
         patches_mag, _ = self.split_into_patches(magnitude)
         patches_ori, _ = self.split_into_patches(orientation_bin.float())
         b, n_patches, c, patch_pixels = patches_x.shape
-        sort_values = torch.zeros_like(patches_x)
-        hog_features = torch.zeros(b, n_patches, self.n_bins, device=x_half.device)
-        for i in range(self.n_bins):
-            bin_mask = (patches_ori == i).float()
-            bin_magnitude = patches_mag * bin_mask
-            sort_values += bin_magnitude * (i + 1)
-            hog_features[..., i] = bin_magnitude.mean(dim=[-1,-2])
-        
+        if self.soft_vote:
+            # Soft voting: each pixel splits its gradient magnitude between the two nearest
+            # orientation bins with linear weights, so the histogram is a continuous (and
+            # differentiable) function of the gradient orientation.
+            # The pixel sort order below keeps the original hard-bin rule (identical values).
+            sort_values = patches_mag * (patches_ori + 1)
+            t = (orientation + torch.pi) / (2 * torch.pi) * self.n_bins - 0.5   # continuous bin coordinate, bin i centred at t=i
+            t_patches, _ = self.split_into_patches(t)
+            t_floor = torch.floor(t_patches)
+            frac = (t_patches - t_floor).flatten(2)
+            i0 = (t_floor.long() % self.n_bins).flatten(2)
+            i1 = ((t_floor.long() + 1) % self.n_bins).flatten(2)
+            mag = patches_mag.flatten(2)
+            hog_features = torch.zeros(b, n_patches, self.n_bins, device=x_half.device, dtype=mag.dtype)
+            hog_features = hog_features.scatter_add(2, i0, mag * (1 - frac)).scatter_add(2, i1, mag * frac)
+            hog_features = hog_features / (c * patch_pixels)
+        else:
+            sort_values = torch.zeros_like(patches_x)
+            hog_features = torch.zeros(b, n_patches, self.n_bins, device=x_half.device)
+            for i in range(self.n_bins):
+                bin_mask = (patches_ori == i).float()
+                bin_magnitude = patches_mag * bin_mask
+                sort_values += bin_magnitude * (i + 1)
+                hog_features[..., i] = bin_magnitude.mean(dim=[-1,-2])
+
         hog_features = hog_features / (hog_features.sum(dim=-1, keepdim=True) + 1e-8)
         _, sort_indices = sort_values.sum(dim=2, keepdim=True).expand_as(patches_x).sort(dim=-1)
         patches_x_sorted = torch.gather(patches_x, -1, sort_indices)
@@ -355,7 +384,9 @@ class HOGformer(nn.Module):
         ffn_expansion_factor = 2.66,
         bias = False,
         LayerNorm_type = 'WithBias',   ## Other option 'BiasFree'
-        dual_pixel_task = False        ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        dual_pixel_task = False,       ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        use_checkpoint = False,        ## activation checkpointing to cut GPU memory (same math)
+        soft_vote = False              ## proposed: soft orientation voting in the HOG descriptor
     ):
 
         super(HOGformer, self).__init__()
@@ -403,6 +434,12 @@ class HOGformer(nn.Module):
         ###########################
             
         self.output = Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
+
+        for m in self.modules():
+            if isinstance(m, TransformerBlock):
+                m.use_checkpoint = use_checkpoint
+            if isinstance(m, Attention_DHOGSA):
+                m.soft_vote = soft_vote
 
     def forward(self, inp_img, ):
 

@@ -1,0 +1,70 @@
+latency 2626.2 ms for a 480x720 image on cuda
+baseline: 16.65 M params, 28.857289728 GMACs @128x128 (fvcore; some ops not counted)
+  test1: 50/750  running PSNR 24.036
+  test1: 100/750  running PSNR 21.882
+  test1: 150/750  running PSNR 22.052
+  test1: 200/750  running PSNR 22.043
+  test1: 250/750  running PSNR 22.113
+  test1: 300/750  running PSNR 22.225
+  test1: 350/750  running PSNR 22.211
+  test1: 400/750  running PSNR 22.182
+  test1: 450/750  running PSNR 22.043
+  test1: 500/750  running PSNR 22.084
+  test1: 550/750  running PSNR 21.917
+  test1: 600/750  running PSNR 21.854
+  test1: 650/750  running PSNR 21.886
+  test1: 700/750  running PSNR 21.759
+  test1: 750/750  running PSNR 21.803
+test1     n=  750  PSNR 21.8026  SSIM 0.8067  (2052s)
+  raindrop: 50/58  running PSNR 26.503
+raindrop  n=   58  PSNR 26.7202  SSIM 0.8866  (159s)
+  snow_s: 50/300  running PSNR 32.205
+  snow_s: 100/300  running PSNR 32.545
+  snow_s: 150/300  running PSNR 32.663
+  snow_s: 200/300  running PSNR 32.858
+  snow_s: 250/300  running PSNR 32.707
+  snow_s: 300/300  running PSNR 32.524
+snow_s    n=  300  PSNR 32.5242  SSIM 0.9259  (680s)
+  snow_l: 50/300  running PSNR 26.786
+  snow_l: 100/300  running PSNR 26.698
+  snow_l: 150/300  running PSNR 26.771
+  snow_l: 200/300  running PSNR 26.713
+  snow_l: 250/300  running PSNR 26.782
+  snow_l: 300/300  running PSNR 26.697
+snow_l    n=  300  PSNR 26.6974  SSIM 0.8510  (675s)
+saved /kaggle/working/results_baseline.json
+latency 2542.8 ms for a 480x720 image on cuda
+softvote: 16.65 M params, 28.857289728 GMACs @128x128 (fvcore; some ops not counted)
+  test1: 50/750  running PSNR 23.840
+  test1: 100/750  running PSNR 21.511
+  test1: 150/750  running PSNR 21.640
+  test1: 200/750  running PSNR 21.670
+  test1: 250/750  running PSNR 21.771
+  test1: 300/750  running PSNR 21.877
+  test1: 350/750  running PSNR 21.853
+  test1: 400/750  running PSNR 21.784
+  test1: 450/750  running PSNR 21.701
+  test1: 500/750  running PSNR 21.736
+  test1: 550/750  running PSNR 21.594
+  test1: 600/750  running PSNR 21.526
+  test1: 650/750  running PSNR 21.578
+  test1: 700/750  running PSNR 21.467
+  test1: 750/750  running PSNR 21.521
+test1     n=  750  PSNR 21.5214  SSIM 0.8109  (1956s)
+  raindrop: 50/58  running PSNR 26.420
+raindrop  n=   58  PSNR 26.6264  SSIM 0.8863  (151s)
+  snow_s: 50/300  running PSNR 32.090
+  snow_s: 100/300  running PSNR 32.467
+  snow_s: 150/300  running PSNR 32.549
+  snow_s: 200/300  running PSNR 32.728
+  snow_s: 250/300  running PSNR 32.613
+  snow_s: 300/300  running PSNR 32.466
+snow_s    n=  300  PSNR 32.4663  SSIM 0.9261  (649s)
+  snow_l: 50/300  running PSNR 27.208
+  snow_l: 100/300  running PSNR 27.076
+  snow_l: 150/300  running PSNR 27.123
+  snow_l: 200/300  running PSNR 27.066
+  snow_l: 250/300  running PSNR 27.124
+  snow_l: 300/300  running PSNR 27.020
+snow_l    n=  300  PSNR 27.0196  SSIM 0.8538  (644s)
+saved /kaggle/working/results_softvote.json
