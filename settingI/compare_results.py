@@ -36,7 +36,8 @@ def main():
                     f"| {100 * (d > 0).mean():.0f}% | {x[:, 1].mean():.4f} | {y[:, 1].mean():.4f} |")
     rows.append('')
     rows.append(f"Params: {A['name']} {A['params_M']:.2f} M vs {B['name']} {B['params_M']:.2f} M; "
-                f"GMACs@128: {A['GMACs_128x128']} vs {B['GMACs_128x128']} (fvcore does not count every op).")
+                f"GMACs@128: {A['GMACs_128x128']} vs {B['GMACs_128x128']} (fvcore does not count every op); "
+                f"latency {A.get('latency_ms')} vs {B.get('latency_ms')} ms ({A.get('device')}).")
     out = '\n'.join(rows)
     print(out)
     if a.md:

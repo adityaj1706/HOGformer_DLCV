@@ -69,6 +69,22 @@ def count_macs(net, device, size=128):
         print('FLOP counting failed:', e); return None
 
 
+@torch.no_grad()
+def measure_latency(net, device, shape=(1, 3, 480, 720), warmup=5, runs=20):
+    """Mean forward time in ms for one image of the given shape (GPU: synchronised timing)."""
+    x = torch.rand(*shape, device=device)
+    for _ in range(warmup):
+        net(x)
+    if device.type == 'cuda':
+        torch.cuda.synchronize()
+    t0 = time.time()
+    for _ in range(runs):
+        net(x)
+    if device.type == 'cuda':
+        torch.cuda.synchronize()
+    return (time.time() - t0) / runs * 1000.
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--config', required=True)
@@ -80,6 +96,7 @@ def main():
     ap.add_argument('--max_images', type=int, default=0, help='debug: cap images per dataset (0 = no cap)')
     ap.add_argument('--seed', type=int, default=0, help='seed of the Snow100K subset selection (keep identical for all models)')
     ap.add_argument('--debug_crop', type=int, default=0, help='debug only: centre-crop images to NxN (for CPU tests)')
+    ap.add_argument('--latency_shape', type=int, nargs=2, default=[480, 720], help='H W of the latency benchmark image (0 0 = skip)')
     ap.add_argument('--name', default=None)
     args = ap.parse_args()
 
@@ -89,6 +106,10 @@ def main():
     result = {'name': args.name or cfg.get('name'), 'config': args.config, 'weights': args.weights,
               'device': str(device), 'params_M': sum(p.numel() for p in net.parameters()) / 1e6,
               'GMACs_128x128': count_macs(net, device), 'snow_n': args.snow_n, 'seed': args.seed, 'datasets': {}}
+    if args.latency_shape[0] > 0:
+        result['latency_ms'] = measure_latency(net, device, (1, 3, *args.latency_shape))
+        result['latency_shape'] = args.latency_shape
+        print(f"latency {result['latency_ms']:.1f} ms for a {args.latency_shape[0]}x{args.latency_shape[1]} image on {device}")
     print(f"{result['name']}: {result['params_M']:.2f} M params, {result['GMACs_128x128']} GMACs @128x128 (fvcore; some ops not counted)")
 
     for ds in args.datasets:
