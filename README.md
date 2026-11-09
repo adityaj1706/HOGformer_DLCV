@@ -4,7 +4,7 @@ Course project for *Deep Learning for Computer Vision* (DA 6021). We reproduce *
 (Wu et al., *Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration*, AAAI 2026,
 [arXiv 2504.09377](https://arxiv.org/abs/2504.09377), upstream code
 [Fire-friend/HOGformer](https://github.com/Fire-friend/HOGformer)) under a reduced compute budget and test
-one modification of its HOG descriptor. The original README is kept as [`README_upstream.md`](README_upstream.md).
+one modification of its HOG descriptor.
 
 > **Headline result (honest summary).** Soft voting did **not** give a consistent improvement: it helped on Snow100K-L
 > (+0.32 dB PSNR) but was slightly worse on Test1 (-0.28 dB) and RainDrop (-0.09 dB) and indistinguishable on Snow100K-S;
@@ -41,7 +41,7 @@ The one-page report is in [`report/main.tex`](report/main.tex).
   PSNR is therefore far below the paper's. We compare *our* baseline against *our* modified model, trained
   under identical conditions; we do not compare with the paper's table.
 * The baseline's training was resumed once from its iteration-10,000 checkpoint (Colab -> Kaggle).
-* Only Setting I (all-weather: Snow100K / Outdoor-Rain / RainDrop) was run. `settingIII&IV/` is unchanged upstream code.
+* Only Setting I (all-weather: Snow100K / Outdoor-Rain / RainDrop) was run. Upstream parts we did not use (Settings III/IV, the 4-GPU full-schedule config and training script, Histoformer's test scripts) are not included here; see the upstream repository.
 
 ## 2. Environment and dependencies
 
@@ -49,15 +49,14 @@ The one-page report is in [`report/main.tex`](report/main.tex).
   used; baseline 10k-12k, proposed model, evaluation). Training needs about 9.4 GB of GPU memory at batch 8 / 64x64.
   About 0.9-1 s per iteration; the proposed run took 3 h 03 min of training (3:03:02 in its log) plus 4 RainDrop validations of about 2.6 min each.
 * **Software:** PyTorch 2.11.0 (CUDA 13.0 build) and TorchVision 0.26.0, as recorded in both training logs (Colab and Kaggle used the same
-  versions), BasicSR 1.2.0, plus the other packages in [`settingI/requirements_colab.txt`](settingI/requirements_colab.txt)
-  (not pinned; Python 3.10+). `torch`/`torchvision` are intentionally not in that file: install the CUDA build for your machine.
-  The upstream `requirements.txt` is UTF-16 and lists Windows-only `pywin32` and `dlib`; do not use it on Linux.
+  versions), BasicSR 1.2.0, plus the other packages in [`requirements.txt`](requirements.txt) (not pinned; Python 3.10+).
+  `torch`/`torchvision` are intentionally not in that file: install the CUDA build for your machine.
 
 ```bash
 git clone https://github.com/adityaj1706/HOGformer_DLCV.git
 cd HOGformer_DLCV
 pip install torch torchvision                 # skip on Colab/Kaggle (preinstalled)
-pip install -r settingI/requirements_colab.txt
+pip install -r requirements.txt
 ```
 
 No CUDA extension needs to be built (we run from the source tree: `cd settingI` first).
@@ -215,7 +214,7 @@ a 12k-iteration schedule, and 300-image Snow subsets. FLOPs counted by fvcore (1
 
 ## 7. Code organization and reproducibility
 
-Files we added or changed (everything else is upstream HOGformer / BasicSR code):
+Files we added or changed (everything else in `settingI/basicsr/` is upstream HOGformer / BasicSR library code, kept as is):
 
 | File | Purpose |
 |---|---|
@@ -224,7 +223,7 @@ Files we added or changed (everything else is upstream HOGformer / BasicSR code)
 | `settingI/evaluate.py`, `settingI/compare_results.py` | Full-image evaluation and paired comparison. |
 | `settingI/tests/test_soft_vote.py` | Checks of the continuity and gradient-flow claims. |
 | `settingI/basicsr/train.py`, `settingI/basicsr/utils/logger.py` | Logging only: removed duplicated log lines, heartbeat, validation timing. No effect on training. |
-| `scripts/download_data.sh`, `settingI/requirements_colab.txt` | Dataset download/arrangement and a Linux dependency list. |
+| `scripts/download_data.sh`, `requirements.txt` | Dataset download/arrangement and a Linux dependency list. |
 | `colab/`, `kaggle/`, `report/` | Notebooks used for the runs and the one-page report source. |
 
 Reproducibility notes: both runs use `manual_seed: 100` and the same data order. GPU kernels (and `cudnn.benchmark`) are not
