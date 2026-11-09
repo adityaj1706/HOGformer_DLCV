@@ -8,8 +8,7 @@ one modification of its HOG descriptor. The original README is kept as [`README_
 
 > **Headline result (honest summary).** Soft voting did **not** give a consistent improvement: it helped on Snow100K-L
 > (+0.32 dB PSNR) but was slightly worse on Test1 (-0.28 dB) and RainDrop (-0.09 dB) and indistinguishable on Snow100K-S;
-> the mean change over the four test sets is -0.03 dB. Details and caveats are in section 6. Remaining `TODO` items
-> are links to the hosted checkpoints/logs.
+> the mean change over the four test sets is -0.03 dB. Details and caveats are in section 6.
 
 ---
 
@@ -137,9 +136,9 @@ parameters, FLOPs (fvcore, 128x128; not every op is counted) and latency (one 48
 ```bash
 cd settingI
 python evaluate.py --config Allweather/Options/Allweather_HOGformer_baseline.yml \
-    --weights /path/to/baseline/net_g_latest.pth --out results_baseline.json --name baseline --data_root ../data/weather
+    --weights ../checkpoints/baseline_net_g_latest.pth --out results_baseline.json --name baseline --data_root ../data/weather
 python evaluate.py --config Allweather/Options/Allweather_HOGformer_softvote.yml \
-    --weights /path/to/softvote/net_g_latest.pth --out results_softvote.json --name softvote --data_root ../data/weather
+    --weights ../checkpoints/softvote_net_g_latest.pth --out results_softvote.json --name softvote --data_root ../data/weather
 python compare_results.py results_baseline.json results_softvote.json --md comparison.md
 ```
 
@@ -155,17 +154,30 @@ harmless for RainDrop (58 images) but is why `evaluate.py` exists. Unit checks o
 
 ## 6. Checkpoints and results
 
-**Checkpoints, configs and logs:** TODO (links to be added)
+**Checkpoints, configs and logs** (public, no login needed):
 
 | Item | Link |
 |---|---|
-| Baseline `net_g_latest.pth` | TODO |
-| Proposed (soft voting) `net_g_latest.pth` | TODO |
+| Baseline `net_g_latest.pth` (67.2 MB) | [download](https://github.com/adityaj1706/HOGformer_DLCV/releases/download/v1.0/baseline_net_g_latest.pth), SHA-256 `6a4114c5a561d40b0506082d709db54fb22ce4b5c6b963e6e508df5bd5b2d2e6` |
+| Proposed (soft voting) `net_g_latest.pth` (67.2 MB) | [download](https://github.com/adityaj1706/HOGformer_DLCV/releases/download/v1.0/softvote_net_g_latest.pth), SHA-256 `2705299124773bba3e5e9048c4fde32af62a43d39001b6d3a573d8699ce26934` |
 | Training log, proposed (iterations 0-12,000, Kaggle T4) | [`results/logs/train_softvote_kaggle_iter0-12000_20261104_231803.log`](results/logs/train_softvote_kaggle_iter0-12000_20261104_231803.log) |
 | Training log, baseline, iterations 0-11,290 (Colab T4) | [`results/logs/train_baseline_colab_iter0-11290_20261104_130937.log`](results/logs/train_baseline_colab_iter0-11290_20261104_130937.log) |
-| Training log, baseline, iterations 10,000-12,000 (Kaggle resume) | TODO |
+| Training log, baseline, iterations 10,000-12,000 (Kaggle resume) | not included; the final baseline result is in `results/results_baseline.json` and reproducible with the released checkpoint |
 | Evaluation log and per-image results | [`results/logs/eval_stdout.log`](results/logs/eval_stdout.log), [`results/results_baseline.json`](results/results_baseline.json), [`results/results_softvote.json`](results/results_softvote.json) |
 | Configs | [`baseline`](settingI/Allweather/Options/Allweather_HOGformer_baseline.yml), [`softvote`](settingI/Allweather/Options/Allweather_HOGformer_softvote.yml) |
+
+Download and check the released weights, then evaluate them (about 1-2 h on a T4, see section 5):
+
+```bash
+mkdir -p checkpoints && cd checkpoints
+wget https://github.com/adityaj1706/HOGformer_DLCV/releases/download/v1.0/baseline_net_g_latest.pth
+wget https://github.com/adityaj1706/HOGformer_DLCV/releases/download/v1.0/softvote_net_g_latest.pth
+sha256sum *.pth        # must match the table above
+cd ../settingI         # then run the commands of section 5 with --weights ../checkpoints/<name>_net_g_latest.pth
+```
+
+Sanity check we ran: scoring one full-size RainDrop image with each *downloaded* file reproduced the per-image PSNR stored in
+`results/*.json` to within 0.02 dB (CPU vs GPU arithmetic).
 
 **Training-time RainDrop validation PSNR (Y channel, 58 images, from the training logs):**
 
