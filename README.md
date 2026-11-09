@@ -1,190 +1,204 @@
-# Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration (AAAI2026)
-
-[![Paper](https://img.shields.io/badge/arXiv-2504.09377-b31b1b.svg)](https://arxiv.org/abs/2504.09377) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
-This repository contains the official implementation of the paper "[Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration](https://arxiv.org/abs/2504.09377)".
-
-📅 2025-12-22 New Experimental Results Added
-* We have updated the experimental results by following the training and evaluation protocols of AdaIR and PromptIR for fair and comprehensive comparison.
-
-
-## 📑 Abstract
-
-All-in-one image restoration (AIR) aims to address diverse degradations within a unified model by leveraging informative degradation conditions to guide the restoration process. However, existing methods often rely on implicitly learned priors, which may entangle feature representations and hinder performance in complex or unseen scenarios. Histogram of Oriented Gradients (HOG) as a classical gradient representation, we observe that it has strong discriminative capability across diverse degradations, making it a powerful and interpretable prior for AIR. Based on this insight, we propose HOGformer, a Transformer-based model that integrates learnable HOG features for degradation-aware restoration. The core of HOGformer is a Dynamic HOG-aware Self-Attention (DHOGSA) mechanism, which adaptively models long-range spatial dependencies conditioned on degradation-specific cues encoded by HOG descriptors. To further adapt the heterogeneity of degradations in AIR, we propose a Dynamic Interaction Feed-Forward (DIFF) module that facilitates channel–spatial interactions, enabling robust feature transformation under diverse degradations. Besides, we propose a HOG loss to explicitly enhance structural fidelity and edge sharpness. Extensive experiments on a variety of benchmarks, including adverse weather and natural degradations, demonstrate that HOGformer achieves state-of-the-art performance and generalizes well to complex real-world scenarios.
-
-## 📈 Results
-
-<details>
-<summary><b>📊 Setting I Results</b></summary>
-
-![Setting I Results](https://github.com/user-attachments/assets/9421fb07-8fd0-465f-89bd-b5599a184fe2)
-
-</details>
-
-<details>
-<summary><b>📊 Setting II Results</b></summary>
-
-![Setting II Results](https://github.com/user-attachments/assets/c14b50c6-d10d-423b-8344-fc9b1fb283fb)
-
-</details>
-
-<details>
-<summary><b>📊 Setting III Results</b></summary>
-
-![Setting III Results](https://github.com/user-attachments/assets/c5e23ab3-70d5-4a0e-bf77-7dc4ccbf3397)
-
-</details>
-
-<details>
-<summary><b>📊 Setting IV Results</b></summary>
-
-![Setting IV Results](https://github.com/user-attachments/assets/e861f0b8-6d99-4d77-978e-7d180a7bc0ab)
-
-</details>
-
-## 🏗️ Framework
-
-<details>
-<summary><b>💡 Motivation</b></summary>
-
-<div align="center">
-  <p><b>Motivation</b></p>
-  <img src="https://github.com/user-attachments/assets/eee2809c-8c4c-40b3-afbc-2c03317c71bc" alt="Motivation" width="85%">
-</div>
-
-</details>
-
-<details>
-<summary><b>🧠 Method Overview</b></summary>
-
-<div align="center">
-  <p><b>Method Overview</b></p>
-  <img src="https://github.com/user-attachments/assets/88eea38b-5af5-4c00-abde-7325abbe808c" alt="Method" width="85%">
-</div>
-
-</details>
-
-## 🛠️ Setup
-
-### Installation
-
-#### Setting I
-```bash
-# Clone the repository
-git clone https://github.com/Fire-friend/HOGformer.git
-cd HOGformer/settingI
-
-# Create and activate virtual environment (recommended)
-conda create -n HOGformerI python==3.10
-conda activate HOGformerI
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install basicsr
-python setup.py develop --no_cuda_ext
-````
-
-## 📊 Dataset
-
-### Data Preparation
-
-#### Setting I
-
-| Resource                            | Download Links                                                                                            |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Training dataset** (All together) | [BaiduYun Disk](https://pan.baidu.com/s/1LagvtxjK8BEJdJvl6ntSmg) (Code: m695) <br> [Google Drive (TBD)]() |
-| **Test dataset** (All together)     | [BaiduYun Disk](https://pan.baidu.com/s/1ZZgOxKkVXBImtBWXOBg0LQ) (Code: nabu) <br> [Google Drive (TBD)]() |
-
-#### Setting III & Setting IV 
-
-Please follow the [AdaIR code](https://github.com/c-yn/AdaIR) for configuration and training.
-
-## 🚀 Usage
-
-### Training
-
-#### Setting I
-
-```bash
-cd settingI
-./train.sh Allweather/Options/Allweather_HOGformer.yml 4321
-```
-
-#### Setting III & Setting IV
-
-Please follow the [AdaIR code](https://github.com/c-yn/AdaIR) for configuration and training.
-
-### Evaluation
-
-#### Setting I
-
-1. Download the pretrained models:
-
-   * [BaiduYun Disk](https://pan.baidu.com/s/17c-1eSklHNA6NmEznUjwug) (Code: wa6u)
-   * [Google Drive (TBD)]()
-2. Place the downloaded models in `./Allweather/pretrained_models/`
-3. Test with the replaced argument:
-
-   ```bash
-   cd Allweather
-   python test_histoformer.py --input_dir [INPUT_FOLDER] --result_dir result/ --weights pretrained_models/net_g_latest.pth --yaml_file Options/Allweather_HOGformer.yml
-   ```
-
-#### Setting III & Setting IV
-Three Tasks:
-* [BaiduYun Disk](https://pan.baidu.com/s/1dAlXezIDPejCDnab1u_xOw?pwd=w9yk)
-* [Google Drive](https://drive.google.com/file/d/1QgmTPPZBtaRg6QFIK2OAM0QMXRtpKnSF/view?usp=sharing)
-
-Five Tasks:
-* [BaiduYun Disk](https://pan.baidu.com/s/1qoFIJVbE0oBc9wX91VFWtw?pwd=8as2)
-* [Google Drive](https://drive.google.com/file/d/1KwSXF-seYqFrbaFh3ZQojCQD-DJ9sNyq/view?usp=sharing)
-
-```bash
-python test.py
-```
-
-## 📷 Visualizations
-
-<details>
-<summary><b>🔍 Visualization 1</b></summary>
-
-![Visualization 1](https://github.com/user-attachments/assets/7bbd3a2d-6a88-4a7a-b1b8-ab7d9197541a)
-
-</details>
-
-<details>
-<summary><b>🔍 Visualization 2</b></summary>
-
-![Visualization 2](https://github.com/user-attachments/assets/3268651b-0581-4c92-b4db-0b8fe6038745)
-
-</details>
-
-## 📝 Citation
-
-If you use our code or method in your research, please cite our paper:
-
-```bibtex
-@inproceedings{wu2026gradient,
-  title={Gradient as conditions: Rethinking HOG for all-in-one image restoration},
-  author={Wu, Jiawei and Yang, Zhifei and Wang, Zhe and Jin, Zhi},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  volume={40},
-  number={13},
-  pages={10682--10690},
-  year={2026}
-}
-```
-
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## 📬 Contact
-
-For any questions, please contact: [wujw97@mail2.sysy.edu.cn](mailto:wujw97@mail2.sysy.edu.cn)
+# Soft-Voting HOG Conditioning for HOGformer (Team Kernel Crew)
+
+Course project for *Deep Learning for Computer Vision* (DA 6021). We reproduce **HOGformer**
+(Wu et al., *Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration*, AAAI 2026,
+[arXiv 2504.09377](https://arxiv.org/abs/2504.09377), upstream code
+[Fire-friend/HOGformer](https://github.com/Fire-friend/HOGformer)) under a reduced compute budget and test
+one modification of its HOG descriptor. The original README is kept as [`README_upstream.md`](README_upstream.md).
+
+> **Status of the results.** Sections marked `TODO` below are filled in when the final evaluation finishes.
+> Nothing in this README claims an improvement that was not measured.
 
 ---
 
-**Acknowledgment:** This code is based on the [BasicSR](https://github.com/xinntao/BasicSR) toolbox, [Histoformer](https://github.com/sunshangquan/Histoformer), [DiffUIR](https://github.com/iSEE-Laboratory/DiffUIR), and [AdaIR](https://github.com/c-yn/AdaIR).
+## 1. Project overview
 
+**HOGformer** conditions its self-attention on a Histogram-of-Oriented-Gradients (HOG) descriptor computed per
+8x8 patch of the feature map (9 orientation bins). In the original code every pixel is put into **exactly one**
+orientation bin (a hard integer decision).
+
+**Our modification: soft orientation voting.** Each pixel splits its gradient magnitude between its two nearest
+orientation bins with linear weights. Only `Attention_DHOGSA.apply_hog_to_patch` changes; there are no new
+parameters (16.65 M for both models), and the pixel-sorting step keeps the original hard rule.
+
+Why we expect it to help (a hypothesis we test, not an assumption):
+
+* Hard binning has zero gradient with respect to the orientation and makes the histogram jump by a pixel's full
+  magnitude when its orientation crosses a bin edge. Soft voting makes the histogram continuous
+  (`|dH/dtheta| <= (B/2pi) m/|P|`) and lets gradient flow through the orientation (bounded by `1 + B/2pi`).
+* Verified numerically in [`settingI/tests/test_soft_vote.py`](settingI/tests/test_soft_vote.py): sweeping the
+  orientation of a synthetic edge, the largest histogram change between neighbouring angles is **2.000 (hard) vs
+  0.005 (soft)**, and `|dLoss/dtheta|` is **0 (hard) vs 1.432 = B/2pi (soft)**.
+* With the flag off the model is **bit-identical** to the original code (checked: max output difference 0.0).
+
+The one-page report is in [`report/main.tex`](report/main.tex).
+
+**Important scope notes (deviations from the paper):**
+
+* Training is **shortened to 12,000 iterations** on **64x64 crops, batch 8** (the released config uses 300k
+  iterations with progressive patch sizes up to 400x400) because we only had free Colab/Kaggle T4 GPUs. Absolute
+  PSNR is therefore far below the paper's. We compare *our* baseline against *our* modified model, trained
+  under identical conditions; we do not compare with the paper's table.
+* The baseline's training was resumed once from its iteration-10,000 checkpoint (Colab -> Kaggle).
+* Only Setting I (all-weather: Snow100K / Outdoor-Rain / RainDrop) was run. `settingIII&IV/` is unchanged upstream code.
+
+## 2. Environment and dependencies
+
+* **Hardware used:** NVIDIA T4 (16 GB) on Google Colab (baseline, iterations 0-10k) and Kaggle (T4 x2, only one GPU
+  used; baseline 10k-12k, proposed model, evaluation). Training needs about 9.4 GB of GPU memory at batch 8 / 64x64.
+  About 1 s per iteration, so roughly 3.5-4 h per model.
+* **Software:** Python 3.10+, PyTorch 2.x with CUDA (the preinstalled Colab/Kaggle builds; we did not pin versions),
+  plus the packages in [`settingI/requirements_colab.txt`](settingI/requirements_colab.txt). Our CPU tests used
+  PyTorch 2.15.0 (CPU). `torch`/`torchvision` are intentionally not in the file (install the CUDA build for your machine).
+  The upstream `requirements.txt` is UTF-16 and lists Windows-only `pywin32` and `dlib`; do not use it on Linux.
+
+```bash
+git clone https://github.com/adityaj1706/HOGformer_DLCV.git
+cd HOGformer_DLCV
+git checkout claude/lucid-fermi-emhnbo        # TODO: remove this line once the branch is merged into main
+pip install torch torchvision                 # skip on Colab/Kaggle (preinstalled)
+pip install -r settingI/requirements_colab.txt
+```
+
+No CUDA extension needs to be built (we run from the source tree: `cd settingI` first).
+
+## 3. Dataset preparation
+
+Setting I uses the **All-Weather** composite training set (from TransWeather/Histoformer) and four test sets:
+
+| Split | Content | Pairs |
+|---|---|---|
+| train | All-Weather composite (Snow100K 9,001 / Outdoor-Rain 8,250 / RainDrop 818, by filename) | 18,069 |
+| test | Outdoor-Rain **Test1** | 750 |
+| test | **RainDrop** test_a | 58 |
+| test | **Snow100K-S** / **Snow100K-L** | 16,611 / 16,801 (we score a fixed random subset, see section 5) |
+
+One command downloads and arranges everything (about 35 GB of temporary disk, about 15 GB at the end):
+
+```bash
+bash scripts/download_data.sh ./data          # -> ./data/weather/{train,test}/...
+```
+
+Options (environment variables): `SKIP_SNOW=1` (skip the Snow100K test sets, not needed for training),
+`SKIP_TRAIN=1` (evaluation only, skip the 11 GB training set), `ALLWEATHER_ZIP=/path/allweather.zip` (use a local copy),
+`ALLWEATHER_ID=<Google Drive file id>` (use your own shared copy). **Google Drive may refuse the shared links with
+"Too many users have viewed or downloaded this file"**; in that case copy the file to your own Drive and use one of the last two options.
+
+What the script does besides downloading: it extracts the archives, renames RainDrop `data/` to `input/` and
+`N_clean.png` to `N_rain.png` (the data loader pairs files by identical name), and checks the file counts and name matching.
+Expected layout:
+
+```
+data/weather/
+  train/{gt,input}/                              18069 pairs
+  test/Test1/{gt,input}/                         750
+  test/RainDrop/test_a/{gt,input}/               58
+  test/Snow100K-Test/Snow100K-{S,L}/{gt,synthetic}/
+```
+
+The configs read the data from `/content/data/weather/`. To use another location either symlink it
+(`sudo mkdir -p /content && sudo ln -s "$(pwd)/data" /content/data`) or edit the `dataroot_gt` / `dataroot_lq` lines of the YAML.
+
+## 4. Training instructions
+
+Run from `settingI/`. Both models use the same data, seed (100), schedule and losses (L1 + Pearson + HOG loss);
+**the only difference between the two YAML files is the run name and `soft_vote: true`.**
+
+```bash
+cd settingI
+# Baseline (original hard voting)
+python basicsr/train.py -opt Allweather/Options/Allweather_HOGformer_baseline.yml --launcher none
+# Proposed (soft voting)
+python basicsr/train.py -opt Allweather/Options/Allweather_HOGformer_softvote.yml --launcher none
+```
+
+Key hyperparameters (identical for both): 12,000 iterations; 64x64 random crops with flips/rotations; batch 8;
+AdamW (lr 3e-4, weight decay 1e-4, betas 0.9/0.999) with gradient clipping; learning rate held at 3e-4 for 4,000
+iterations, then cosine decay to 1e-6 over 8,000; network dim 36, blocks [4,4,6,8], heads [1,2,4,8]; validation on RainDrop
+every 3,000 iterations; checkpoint every 2,000.
+`use_checkpoint: true` (activation checkpointing, same math, less memory) is available if the GPU has less than about 10 GB.
+
+* **Resuming:** rerunning the same command resumes automatically from the newest `experiments/<name>/training_states/<N>.state`
+  (it needs the matching `models/net_g_<N>.pth` too).
+* **Pretrained weights:** none are used; both models train from scratch. (The authors' weights are only on BaiduYun.)
+* **Notebooks:** [`colab/hogformer_baseline_colab.ipynb`](colab/hogformer_baseline_colab.ipynb),
+  [`kaggle/hogformer_kaggle.ipynb`](kaggle/hogformer_kaggle.ipynb) (baseline) and
+  [`kaggle/hogformer_kaggle_softvote.ipynb`](kaggle/hogformer_kaggle_softvote.ipynb) (proposed). For unattended Kaggle runs use
+  *Save & Run All (Commit)*; an idle interactive session is shut down by Kaggle.
+* Training logs go to `experiments/<name>/train_*.log` and a heartbeat (speed, memory, ETA, last PSNR) to `experiments/<name>/progress.txt`.
+
+## 5. Inference and evaluation
+
+[`settingI/evaluate.py`](settingI/evaluate.py) scores **every** image of Test1 and RainDrop and a **fixed random subset**
+(seed 0, default 300) of Snow100K-S/-L, with PSNR/SSIM on the Y channel (crop 0), reflect-padding to a multiple of 16, plus
+parameters, FLOPs (fvcore, 128x128; not every op is counted) and latency (one 480x720 image). It saves per-image scores.
+
+```bash
+cd settingI
+python evaluate.py --config Allweather/Options/Allweather_HOGformer_baseline.yml \
+    --weights /path/to/baseline/net_g_latest.pth --out results_baseline.json --name baseline --data_root ../data/weather
+python evaluate.py --config Allweather/Options/Allweather_HOGformer_softvote.yml \
+    --weights /path/to/softvote/net_g_latest.pth --out results_softvote.json --name softvote --data_root ../data/weather
+python compare_results.py results_baseline.json results_softvote.json --md comparison.md
+```
+
+`compare_results.py` prints the per-dataset PSNR difference (proposed - baseline) with a 95 % paired-bootstrap confidence interval and the
+share of images that improved. Reproduce everything on Kaggle with [`kaggle/hogformer_eval_kaggle.ipynb`](kaggle/hogformer_eval_kaggle.ipynb)
+(about 1-2 h on a T4; inference is about 2.6 s per 480x720 image).
+Use `--snow_n N` to change the Snow100K subset size and `--datasets test1 raindrop` to restrict the datasets.
+We evaluate the **last** checkpoint (`net_g_latest.pth`, iteration 12,000), not the best-on-test one.
+
+**Note:** the training-time validation (`basicsr/models/image_restoration_model.py`) only scores the first 60 images of a set; this is
+harmless for RainDrop (58 images) but is why `evaluate.py` exists. Unit checks of the modification:
+`cd settingI && PYTHONPATH=. python tests/test_soft_vote.py`.
+
+## 6. Checkpoints and results
+
+**Checkpoints, configs and logs:** TODO (links to be added)
+
+| Item | Link |
+|---|---|
+| Baseline `net_g_latest.pth` | TODO |
+| Proposed (soft voting) `net_g_latest.pth` | TODO |
+| Training logs (baseline: Colab 0-10k + Kaggle 10k-12k; proposed) | TODO |
+| Configs | [`baseline`](settingI/Allweather/Options/Allweather_HOGformer_baseline.yml), [`softvote`](settingI/Allweather/Options/Allweather_HOGformer_softvote.yml) |
+
+**Training-time RainDrop validation PSNR (Y channel, 58 images, from the training logs):**
+
+| Iteration | Baseline | Soft voting |
+|---|---|---|
+| 3,000 | 25.81 | TODO |
+| 6,000 | 25.51 | TODO |
+| 9,000 | 26.43 | 26.31 |
+| 12,000 (final) | 26.72 | 26.63 |
+
+**Final evaluation (PSNR / SSIM, Y channel):** TODO, generated by `compare_results.py`.
+
+| Method | Test1 | RainDrop | Snow-S (300) | Snow-L (300) | Params | Latency (T4) |
+|---|---|---|---|---|---|---|
+| Baseline | TODO | TODO | TODO | TODO | 16.65 M | TODO |
+| Soft voting | TODO | TODO | TODO | TODO | 16.65 M | TODO |
+
+## 7. Code organization and reproducibility
+
+Files we added or changed (everything else is upstream HOGformer / BasicSR code):
+
+| File | Purpose |
+|---|---|
+| `settingI/basicsr/models/archs/hogformer_arch.py` | **The modification:** `soft_vote` flag in `Attention_DHOGSA.apply_hog_to_patch` (off by default). Also an optional `use_checkpoint` flag (activation checkpointing, identical numerics). |
+| `settingI/Allweather/Options/Allweather_HOGformer_{baseline,softvote}.yml` | Single-GPU, shortened-schedule configs (differ only in `soft_vote`). |
+| `settingI/evaluate.py`, `settingI/compare_results.py` | Full-image evaluation and paired comparison. |
+| `settingI/tests/test_soft_vote.py` | Checks of the continuity and gradient-flow claims. |
+| `settingI/basicsr/train.py`, `settingI/basicsr/utils/logger.py` | Logging only: removed duplicated log lines, heartbeat, validation timing. No effect on training. |
+| `scripts/download_data.sh`, `settingI/requirements_colab.txt` | Dataset download/arrangement and a Linux dependency list. |
+| `colab/`, `kaggle/`, `report/` | Notebooks used for the runs and the one-page report source. |
+
+Reproducibility notes: both runs use `manual_seed: 100` and the same data order. GPU kernels (and `cudnn.benchmark`) are not
+bit-deterministic, so a rerun will differ slightly; one training run per model is a limitation (the confidence intervals above
+capture image sampling, not training-seed variation). The shortened schedule means the conclusions apply to this short-training regime only.
+
+## License and acknowledgments
+
+MIT (see `LICENSE`, upstream copyright retained). Built on HOGformer, [BasicSR](https://github.com/xinntao/BasicSR),
+[Histoformer](https://github.com/sunshangquan/Histoformer), [DiffUIR](https://github.com/iSEE-Laboratory/DiffUIR) and
+[AdaIR](https://github.com/c-yn/AdaIR).
