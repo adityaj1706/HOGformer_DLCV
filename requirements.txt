@@ -1,3 +1,7 @@
+# Linux dependencies for the HOGformer reproduction (Setting I). Versions are not pinned.
+# Install PyTorch + TorchVision for your CUDA version first (we used torch 2.11.0+cu130, torchvision 0.26.0+cu130):
+#   pip install torch torchvision
+#   pip install -r requirements.txt
 colorama
 contourpy
 cycler
