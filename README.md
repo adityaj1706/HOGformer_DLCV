@@ -48,10 +48,10 @@ The one-page report is in [`report/main.tex`](report/main.tex).
 
 * **Hardware used:** NVIDIA T4 (16 GB) on Google Colab (baseline, iterations 0-10k) and Kaggle (T4 x2, only one GPU
   used; baseline 10k-12k, proposed model, evaluation). Training needs about 9.4 GB of GPU memory at batch 8 / 64x64.
-  About 1 s per iteration, so roughly 3.5-4 h per model.
-* **Software:** Python 3.10+, PyTorch 2.x with CUDA (the preinstalled Colab/Kaggle builds; we did not pin versions),
-  plus the packages in [`settingI/requirements_colab.txt`](settingI/requirements_colab.txt). Our CPU tests used
-  PyTorch 2.15.0 (CPU). `torch`/`torchvision` are intentionally not in the file (install the CUDA build for your machine).
+  About 0.9-1 s per iteration; the proposed run took 3 h 03 min of training (3:03:02 in its log) plus 4 RainDrop validations of about 2.6 min each.
+* **Software:** PyTorch 2.11.0 (CUDA 13.0 build) and TorchVision 0.26.0, as recorded in both training logs (Colab and Kaggle used the same
+  versions), BasicSR 1.2.0, plus the other packages in [`settingI/requirements_colab.txt`](settingI/requirements_colab.txt)
+  (not pinned; Python 3.10+). `torch`/`torchvision` are intentionally not in that file: install the CUDA build for your machine.
   The upstream `requirements.txt` is UTF-16 and lists Windows-only `pywin32` and `dlib`; do not use it on Linux.
 
 ```bash
@@ -162,15 +162,18 @@ harmless for RainDrop (58 images) but is why `evaluate.py` exists. Unit checks o
 |---|---|
 | Baseline `net_g_latest.pth` | TODO |
 | Proposed (soft voting) `net_g_latest.pth` | TODO |
-| Training logs (baseline: Colab 0-10k + Kaggle 10k-12k; proposed) | TODO |
+| Training log, proposed (iterations 0-12,000, Kaggle T4) | [`results/logs/train_softvote_kaggle_iter0-12000_20261104_231803.log`](results/logs/train_softvote_kaggle_iter0-12000_20261104_231803.log) |
+| Training log, baseline, iterations 0-11,290 (Colab T4) | [`results/logs/train_baseline_colab_iter0-11290_20261104_130937.log`](results/logs/train_baseline_colab_iter0-11290_20261104_130937.log) |
+| Training log, baseline, iterations 10,000-12,000 (Kaggle resume) | TODO |
+| Evaluation log and per-image results | [`results/logs/eval_stdout.log`](results/logs/eval_stdout.log), [`results/results_baseline.json`](results/results_baseline.json), [`results/results_softvote.json`](results/results_softvote.json) |
 | Configs | [`baseline`](settingI/Allweather/Options/Allweather_HOGformer_baseline.yml), [`softvote`](settingI/Allweather/Options/Allweather_HOGformer_softvote.yml) |
 
 **Training-time RainDrop validation PSNR (Y channel, 58 images, from the training logs):**
 
 | Iteration | Baseline | Soft voting |
 |---|---|---|
-| 3,000 | 25.81 | TODO |
-| 6,000 | 25.51 | TODO |
+| 3,000 | 25.81 | 25.83 |
+| 6,000 | 25.51 | 25.66 |
 | 9,000 | 26.43 | 26.31 |
 | 12,000 (final) | 26.72 | 26.63 |
 
