@@ -1,0 +1,206 @@
+
+\documentclass[8pt,a4paper]{article}
+
+% ------------------------------------------------
+% Packages
+% ------------------------------------------------
+\usepackage[
+    top=0.15in,
+    bottom=0.15in,
+    left=0.55in,
+    right=0.55in
+]{geometry}
+
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+% ------------------------------------------------
+% Formatting
+% ------------------------------------------------
+
+% Black-and-white hyperlinks
+\hypersetup{
+    colorlinks=true,
+    allcolors=black
+}
+
+% Reduce line spacing
+\linespread{0.52}
+
+% Reduce paragraph spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1pt}
+
+% Reduce section heading spacing
+\titlespacing*{\subsection}
+{0pt}{7pt}{3pt}
+
+% Table formatting
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.05}
+
+\captionsetup[table]{
+    font=small,
+    labelfont=bf,
+    position=top,
+    skip=3pt
+}
+
+% ------------------------------------------------
+% Document
+% ------------------------------------------------
+\begin{document}
+\thispagestyle{empty}
+
+% ------------------------------------------------
+% Title and Team Information
+% ------------------------------------------------
+\begin{center}
+
+{\large\bfseries
+Soft-Voting HOG Conditioning for All-in-One Image Restoration (HOGformer)}\\[4pt]
+
+\textbf{Team:} Kernel Crew
+\quad | \quad
+\textbf{Team No:} XX
+\quad | \quad
+\textbf{Members:}
+Student 1 (Roll No), Student 2 (Roll No)\\[3pt]
+
+\textbf{GitHub:}
+\url{https://github.com/adityaj1706/HOGformer_DLCV}
+
+\end{center}
+
+\vspace{-5pt}
+
+% ------------------------------------------------
+\subsection*{I. Abstract (Maximum 100 Words)}
+% ------------------------------------------------
+All-in-one restoration must remove rain, snow, haze or raindrops with a single network, yet most models infer which degradation is present only implicitly, which entangles features and generalises poorly. HOGformer argues that gradient orientation is a cheap, interpretable cue: different degradations leave different edge-orientation statistics. It summarises each image patch as a histogram of oriented gradients, uses it to steer self-attention, and adds a HOG loss for sharper edges. Our reading: the network receives an explicit, label-free degradation signal instead of learning one from scratch, which should help most when degradations are mixed or unseen.
+
+% ------------------------------------------------
+\subsection*{II. Proposed Novelty \& Technical Contribution}
+% ------------------------------------------------
+\begin{enumerate}
+    \item \textbf{Novelty:} soft (linear) orientation voting in the HOG descriptor that conditions every attention block. Each pixel splits its gradient magnitude between its two nearest orientation bins, instead of adding it to exactly one bin.
+    \item \textbf{Type:} a modification of an existing module (the descriptor computation inside the dynamic HOG-aware self-attention), not a new module and not a new loss. It adds \emph{no} parameters (16.65\,M for both models) and is switched by a single flag (\texttt{soft\_vote}); with the flag off the model is bit-identical to the original.
+    \item \textbf{Difference from the baseline:} the original assigns each pixel to one of $B{=}9$ bins by a hard integer decision. That decision has zero gradient and makes the descriptor jump when an orientation crosses a bin edge; ours makes the descriptor continuous and differentiable in the orientation. The pixel-sorting step of the attention keeps the original hard rule, so only the descriptor changes.
+\end{enumerate}
+
+% ------------------------------------------------
+\subsection*{III. Theoretical / Mathematical Justification}
+% ------------------------------------------------
+For a patch $P$ of the feature map, let $g_p{=}(g_x,g_y)$ be the Sobel gradient of pixel $p$, $m_p{=}\lVert g_p\rVert$, $\theta_p{=}\operatorname{atan2}(g_y,g_x)$ and $u_p{=}B(\theta_p{+}\pi)/2\pi$. \textbf{Baseline (hard):} $H_b=\tfrac1{|P|}\sum_{p\in P} m_p\,\mathbf 1[\lfloor u_p\rfloor \bmod B=b]$. \textbf{Ours (soft):} with $t_p{=}u_p{-}\tfrac12$, $k_p{=}\lfloor t_p\rfloor$, $\lambda_p{=}t_p{-}k_p$,
+\begin{equation*}
+H_b=\tfrac1{|P|}\sum_{p\in P} m_p\Big[(1{-}\lambda_p)\,\mathbf 1[k_p \bmod B=b]+\lambda_p\,\mathbf 1[(k_p{+}1)\bmod B=b]\Big]=\tfrac1{|P|}\sum_{p\in P} m_p\,w_b(\theta_p),
+\end{equation*}
+where $w_b$ is the circular triangular kernel centred on bin $b$ ($\sum_b w_b{=}1$, so $\sum_b H_b$ is still the mean magnitude and the original normalisation $\hat H_b{=}H_b/(\sum_{b'} H_{b'}{+}\varepsilon)$ is unchanged). \textbf{(i) Continuity:} for hard voting $H_b$ jumps by $m_p/|P|$ when $\theta_p$ crosses a bin edge, while for soft voting $|\partial H_b/\partial\theta_p|\le \tfrac{B}{2\pi}\,m_p/|P|$, so small perturbations of the features cannot flip the conditioning signal. \textbf{(ii) Gradient flow:} $\partial H_b/\partial\theta_p{=}0$ almost everywhere for hard voting, so the orientation branch sends no learning signal to earlier layers. For soft voting, $\partial(m\,w_b)/\partial g = w_b\,\hat g + m\,w_b'(\theta)\,\partial\theta/\partial g$ with $\lVert\partial\theta/\partial g\rVert{=}1/m$, hence $\lVert\partial(m\,w_b)/\partial g\rVert\le 1+\tfrac{B}{2\pi}$: the orientation term is bounded even for faint edges ($m{\to}0$) because the $1/m$ of $\operatorname{atan2}$ cancels the magnitude weight. \textbf{Expected effect (hypothesis, not assumed):} a smoother, lower-variance conditioning signal and extra gradient to the layers that produce the gradients. \textbf{Checked numerically} (sweeping the orientation of a synthetic edge at constant magnitude): largest change of the normalised histogram between neighbouring angles $2.000$ (hard) vs.\ $0.005$ (soft); $|\partial\mathcal L/\partial\theta|$ $=0$ (hard) vs.\ $1.432{=}B/2\pi$ (soft), matching the bound.
+
+% ------------------------------------------------
+\subsection*{IV. Comparative Results \& Empirical Evaluation}
+% ------------------------------------------------
+\textbf{Setup.} Training: All-Weather composite, 18{,}069 pairs (Snow100K 9{,}001; Outdoor-Rain 8{,}250; RainDrop 818), random $64{\times}64$ crops with flips/rotations, batch 8, AdamW (lr $3{\times}10^{-4}$, cosine to $10^{-6}$), 12k iterations (shortened for compute; the released configuration uses 300k), L1 + Pearson + HOG loss, seed 100, identical for both models. Testing at full resolution, last checkpoint (no best-of selection): Test1 (750 pairs), RainDrop test\_a (58), and fixed random 300-image subsets of Snow100K-S/-L. Metrics: PSNR/SSIM on the Y channel; latency for one $480{\times}720$ image on a T4 GPU. The baseline is our own reproduction under this shortened schedule (resumed once from its iteration-10k checkpoint), not the published model, so absolute numbers are well below the paper's.
+
+% ------------------------------------------------
+% Results Table
+% ------------------------------------------------
+\begin{center}
+
+\captionof{table}{
+Quantitative comparison of the baseline and
+proposed method on the Setting~I test sets (PSNR\,/\,SSIM, Y channel).
+Best results are highlighted in bold.
+}
+
+\label{tab:results}
+
+\small
+
+\begin{tabularx}{\linewidth}{
+    @{}X c c c c c c@{}
+}
+
+\toprule
+
+\textbf{Method}
+&
+\makecell{\textbf{Test1}\\($\uparrow$)}
+&
+\makecell{\textbf{RainDrop}\\($\uparrow$)}
+&
+\makecell{\textbf{Snow-S}\\($\uparrow$)}
+&
+\makecell{\textbf{Snow-L}\\($\uparrow$)}
+&
+\makecell{\textbf{Params}\\(M)}
+&
+\makecell{\textbf{Latency}\\(ms $\downarrow$)}
+\\
+
+\midrule
+
+Baseline (HOGformer, hard voting)
+&
+TBD
+&
+TBD
+&
+TBD
+&
+TBD
+&
+16.65
+&
+TBD
+\\
+
+\textbf{Ours (soft voting)}
+&
+TBD
+&
+TBD
+&
+TBD
+&
+TBD
+&
+16.65
+&
+TBD
+\\
+
+\midrule
+
+$\Delta$ (Ours -- Baseline)
+&
+TBD
+&
+TBD
+&
+TBD
+&
+TBD
+&
++0.00
+&
+TBD
+\\
+
+\bottomrule
+
+\end{tabularx}
+
+\end{center}
+
+\vspace{-5pt}
+
+\textbf{Result Interpretation:}
+TBD after the final evaluation (paired per-image differences with 95\% bootstrap confidence intervals will be reported in the repository README).
+
+\end{document}
