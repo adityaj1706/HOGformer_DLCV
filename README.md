@@ -57,7 +57,6 @@ The one-page report is in [`report/main.tex`](report/main.tex).
 ```bash
 git clone https://github.com/adityaj1706/HOGformer_DLCV.git
 cd HOGformer_DLCV
-git checkout claude/lucid-fermi-emhnbo        # TODO: remove this line once the branch is merged into main
 pip install torch torchvision                 # skip on Colab/Kaggle (preinstalled)
 pip install -r settingI/requirements_colab.txt
 ```
