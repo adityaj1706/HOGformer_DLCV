@@ -145,51 +145,51 @@ Best results are highlighted in bold.
 
 \midrule
 
-Baseline (HOGformer, hard voting)
+Baseline (hard voting)
 &
-TBD
+\textbf{21.80} / 0.8067
 &
-TBD
+\textbf{26.72} / \textbf{0.8866}
 &
-TBD
+\textbf{32.52} / 0.9259
 &
-TBD
+26.70 / 0.8510
 &
 16.65
 &
-TBD
+2626
 \\
 
 \textbf{Ours (soft voting)}
 &
-TBD
+21.52 / \textbf{0.8109}
 &
-TBD
+26.63 / 0.8863
 &
-TBD
+32.47 / \textbf{0.9261}
 &
-TBD
+\textbf{27.02} / \textbf{0.8538}
 &
 16.65
 &
-TBD
+\textbf{2543}
 \\
 
 \midrule
 
 $\Delta$ (Ours -- Baseline)
 &
-TBD
+$-0.28$ / $+0.0042$
 &
-TBD
+$-0.09$ / $-0.0003$
 &
-TBD
+$-0.06$ / $+0.0002$
 &
-TBD
+$+0.32$ / $+0.0028$
 &
 +0.00
 &
-TBD
+$-83$
 \\
 
 \bottomrule
@@ -201,6 +201,6 @@ TBD
 \vspace{-5pt}
 
 \textbf{Result Interpretation:}
-TBD after the final evaluation (paired per-image differences with 95\% bootstrap confidence intervals will be reported in the repository README).
+Soft voting changes PSNR by $-0.28$\,dB on Test1 (95\% paired-bootstrap CI $[-0.33,-0.23]$, 29\% of images improve), $-0.09$ on RainDrop ($[-0.16,-0.03]$), $-0.06$ on Snow-S ($[-0.13,+0.02]$, not distinguishable from zero) and $+0.32$ on Snow-L ($[+0.27,+0.37]$, 78\% of images improve); SSIM moves by at most $+0.004$. The mean of the four PSNR deltas is $-0.03$\,dB, so we do \emph{not} observe a consistent improvement: the gain on dense snow is offset by losses on rain/haze (Test1) and raindrops, at identical parameters and a 3\% lower measured latency (a difference we did not test against timing noise). Section~III shows the descriptor behaves as designed, so the end metric is sensitive to the change but not uniformly in the favourable direction. A plausible but \emph{untested} explanation: rain streaks give a sharply peaked orientation histogram that hard bins already encode stably, and soft voting spreads that peak over two bins, losing some discriminability, whereas the dispersed edges of heavy snow may benefit from the smoothing. \textbf{Caveats:} one training run per model (the intervals reflect image sampling, not training-seed variance, so differences of a few tenths of a dB may partly be run-to-run noise), the shortened 12k-iteration schedule, and 300-image Snow subsets.
 
 \end{document}
