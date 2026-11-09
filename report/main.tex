@@ -65,10 +65,12 @@
 {\large\bfseries
 Soft-Voting HOG Conditioning for All-in-One Image Restoration (HOGformer)}\\[4pt]
 
-\textbf{Team:} Kernel Crew
-\quad | \quad
-\textbf{Members:}
-Garv Roy Choudhury (23010xxxx), Aditya Jain (230108002), Rupangkan Mazumdar (2301080xx), Samiksha Mitra (23010xxx)\\[3pt]
+\textbf{Team Kernel Crew}\\[5pt]
+
+\begin{tabular}{@{}c@{\hspace{12pt}}c@{\hspace{12pt}}c@{\hspace{12pt}}c@{\hspace{12pt}}c@{}}
+\textbf{Garv Roy Choudhury} & \textbf{Aditya Jain} & \textbf{Rupangkan Mazumdar} & \textbf{Samiksha Mitra} & \textbf{Anisha Majumder}\\[3pt]
+23010xxxx & 230108002 & 2301080xx & 23010xxx & 230102006
+\end{tabular}\\[5pt]
 
 \textbf{GitHub:}
 \url{https://github.com/adityaj1706/HOGformer_DLCV}
@@ -98,12 +100,18 @@ For a patch $P$ of the feature map, let $g_p{=}(g_x,g_y)$ be the Sobel gradient 
 \begin{equation*}
 H_b=\tfrac1{|P|}\sum_{p\in P} m_p\Big[(1{-}\lambda_p)\,\mathbf 1[k_p \bmod B=b]+\lambda_p\,\mathbf 1[(k_p{+}1)\bmod B=b]\Big]=\tfrac1{|P|}\sum_{p\in P} m_p\,w_b(\theta_p),
 \end{equation*}
-where $w_b$ is the circular triangular kernel centred on bin $b$ ($\sum_b w_b{=}1$, so $\sum_b H_b$ is still the mean magnitude and the original normalisation $\hat H_b{=}H_b/(\sum_{b'} H_{b'}{+}\varepsilon)$ is unchanged). \textbf{(i) Continuity:} for hard voting $H_b$ jumps by $m_p/|P|$ when $\theta_p$ crosses a bin edge, while for soft voting $|\partial H_b/\partial\theta_p|\le \tfrac{B}{2\pi}\,m_p/|P|$, so small perturbations of the features cannot flip the conditioning signal. \textbf{(ii) Gradient flow:} $\partial H_b/\partial\theta_p{=}0$ almost everywhere for hard voting, so the orientation branch sends no learning signal to earlier layers. For soft voting, $\partial(m\,w_b)/\partial g = w_b\,\hat g + m\,w_b'(\theta)\,\partial\theta/\partial g$ with $\lVert\partial\theta/\partial g\rVert{=}1/m$, hence $\lVert\partial(m\,w_b)/\partial g\rVert\le 1+\tfrac{B}{2\pi}$: the orientation term is bounded even for faint edges ($m{\to}0$) because the $1/m$ of $\operatorname{atan2}$ cancels the magnitude weight. \textbf{Expected effect (hypothesis):} a smoother, lower-variance conditioning signal and extra gradient to the layers that produce the gradients. \textbf{Checked numerically} (sweeping the orientation of a synthetic edge at constant magnitude): largest change of the normalised histogram between neighbouring angles $2.000$ (hard) vs.\ $0.005$ (soft); $|\partial\mathcal L/\partial\theta|$ $=0$ (hard) vs.\ $1.432{=}B/2\pi$ (soft), matching the bound.
+where $w_b$ is the circular triangular kernel centred on bin $b$ ($\sum_b w_b{=}1$, so $\sum_b H_b$ is still the mean magnitude and the original normalisation $\hat H_b{=}H_b/(\sum_{b'} H_{b'}{+}\varepsilon)$ is unchanged).
+
+\textbf{(i) Continuity.} For hard voting $H_b$ jumps by $m_p/|P|$ when $\theta_p$ crosses a bin edge, while for soft voting $|\partial H_b/\partial\theta_p|\le \tfrac{B}{2\pi}\,m_p/|P|$, so small perturbations of the features cannot flip the conditioning signal.
+
+\textbf{(ii) Gradient flow.} $\partial H_b/\partial\theta_p{=}0$ almost everywhere for hard voting, so the orientation branch sends no learning signal to earlier layers. For soft voting, $\partial(m\,w_b)/\partial g = w_b\,\hat g + m\,w_b'(\theta)\,\partial\theta/\partial g$ with $\lVert\partial\theta/\partial g\rVert{=}1/m$, hence $\lVert\partial(m\,w_b)/\partial g\rVert\le 1+\tfrac{B}{2\pi}$: the orientation term is bounded even for faint edges ($m{\to}0$) because the $1/m$ of $\operatorname{atan2}$ cancels the magnitude weight.
+
+\textbf{Expected effect (hypothesis):} a smoother, lower-variance conditioning signal and extra gradient to the layers that produce the gradients. \textbf{Checked numerically} (sweeping the orientation of a synthetic edge at constant magnitude): largest change of the normalised histogram between neighbouring angles $2.000$ (hard) vs.\ $0.005$ (soft); $|\partial\mathcal L/\partial\theta|$ $=0$ (hard) vs.\ $1.432{=}B/2\pi$ (soft), matching the bound.
 
 % ------------------------------------------------
 \subsection*{IV. Comparative Results \& Empirical Evaluation}
 % ------------------------------------------------
-\textbf{Setup.} Training: All-Weather composite, 18{,}069 pairs (Snow100K 9{,}001; Outdoor-Rain 8{,}250; RainDrop 818), random $64{\times}64$ crops with flips/rotations, batch 8, AdamW (lr $3{\times}10^{-4}$, cosine to $10^{-6}$), 12k iterations (shortened for compute; the released configuration uses 300k), L1 + Pearson + HOG loss, seed 100, identical for both models. Testing at full resolution, last checkpoint (no best-of selection): Test1 (750 pairs), RainDrop test\_a (58), and fixed random 300-image subsets of Snow100K-S/-L. Metrics: PSNR/SSIM on the Y channel; latency for one $480{\times}720$ image on a T4 GPU. The baseline is our own reproduction under this shortened schedule (resumed once from its iteration-10k checkpoint), not the published model, so absolute numbers are well below the paper's.
+\textbf{Setup.} Training: All-Weather composite, 18{,}069 pairs (Snow100K 9{,}001; Outdoor-Rain 8{,}250; RainDrop 818), random $64{\times}64$ crops with flips/rotations, batch 8, AdamW (lr $3{\times}10^{-4}$, cosine to $10^{-6}$), 12k iterations (shortened for compute; the released configuration uses 300k), L1 + Pearson + HOG loss, seed 100, identical for both models. Testing at full resolution, last checkpoint (no best-of selection): Test1 (750 pairs), RainDrop test\_a (58), and fixed random 300-image subsets of Snow100K-S/-L. Metrics: PSNR/SSIM on the Y channel; latency for one $480{\times}720$ image on a T4 GPU. The baseline is our own reproduction under this shortened schedule (resumed once from its iteration-10k checkpoint), not the published model; absolute numbers are well below the paper's.
 
 % ------------------------------------------------
 % Results Table
@@ -199,6 +207,8 @@ $-83$
 \vspace{-5pt}
 
 \textbf{Result Interpretation:}
-Soft voting changes PSNR by $-0.28$\,dB on Test1 (95\% paired-bootstrap CI $[-0.33,-0.23]$, 29\% of images improve), $-0.09$ on RainDrop ($[-0.16,-0.03]$), $-0.06$ on Snow-S ($[-0.13,+0.02]$, not distinguishable from zero) and $+0.32$ on Snow-L ($[+0.27,+0.37]$, 78\% of images improve); SSIM moves by at most $+0.004$. The mean of the four PSNR deltas is $-0.03$\,dB, so we do \emph{not} observe a consistent improvement: the gain on dense snow is offset by losses on rain/haze (Test1) and raindrops, at identical parameters and comparable latency (2543 vs.\ 2626\,ms). Section~III shows the descriptor behaves as designed, so the end metric is sensitive to the change but not uniformly in the favourable direction. We hypothesise that rain streaks give a sharply peaked orientation histogram that hard bins already encode stably, and soft voting spreads that peak over two bins, losing some discriminability, whereas the dispersed edges of heavy snow benefit from the smoothing. \textbf{Scope:} one training run per model (the intervals reflect image sampling, not training-seed variance), the shortened 12k-iteration schedule, and 300-image Snow subsets.
+Soft voting changes PSNR by $-0.28$\,dB on Test1 (95\% paired-bootstrap CI $[-0.33,-0.23]$, 29\% of images improve), $-0.09$ on RainDrop ($[-0.16,-0.03]$), $-0.06$ on Snow-S ($[-0.13,+0.02]$, not distinguishable from zero) and $+0.32$ on Snow-L ($[+0.27,+0.37]$, 78\% of images improve); SSIM moves by at most $+0.004$. The mean of the four PSNR deltas is $-0.03$\,dB, so we do \emph{not} observe a consistent improvement: the gain on dense snow is offset by losses on rain/haze (Test1) and raindrops, at identical parameters and comparable latency (2543 vs.\ 2626\,ms). The descriptor behaves as designed (Sec.~III), so the metric responds to the change, but not uniformly favourably. 
+
+We hypothesise that rain streaks give a sharply peaked orientation histogram that hard bins already encode stably, and soft voting spreads that peak over two bins, losing some discriminability, whereas the dispersed edges of heavy snow benefit from the smoothing. \textbf{Scope:} one training run per model (the intervals reflect image sampling, not training-seed variance), the shortened 12k-iteration schedule, and 300-image Snow subsets.
 
 \end{document}

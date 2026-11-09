@@ -1,6 +1,7 @@
 # Soft-Voting HOG Conditioning for HOGformer (Team Kernel Crew)
 
-Course project for *Deep Learning for Computer Vision* (DA 6021). We reproduce **HOGformer**
+Course project for *Deep Learning for Computer Vision* (DA 6021) by **Team Kernel Crew**: Garv Roy Choudhury, Aditya Jain,
+Rupangkan Mazumdar, Samiksha Mitra and Anisha Majumder. We reproduce **HOGformer**
 (Wu et al., *Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration*, AAAI 2026,
 [arXiv 2504.09377](https://arxiv.org/abs/2504.09377), upstream code
 [Fire-friend/HOGformer](https://github.com/Fire-friend/HOGformer)) under a reduced compute budget and test
