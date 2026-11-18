@@ -1,15 +1,15 @@
 # Soft-Voting HOG Conditioning for HOGformer (Team Kernel Crew)
 
 Course project for *Deep Learning for Computer Vision* (DA 6021) by **Team Kernel Crew**: Garv Roy Choudhury, Aditya Jain,
-Rupangkan Mazumdar, Samiksha Mitra and Anisha Majumder. We reproduce **HOGformer**
+Rupangkan Mazumdar, Anisha Majumder and Samiksha Mitra. We reproduce **HOGformer**
 (Wu et al., *Gradient as Conditions: Rethinking HOG for All-in-one Image Restoration*, AAAI 2026,
 [arXiv 2504.09377](https://arxiv.org/abs/2504.09377), upstream code
 [Fire-friend/HOGformer](https://github.com/Fire-friend/HOGformer)) under a reduced compute budget and test
 one modification of its HOG descriptor.
 
-> **Headline result (honest summary).** Soft voting did **not** give a consistent improvement: it helped on Snow100K-L
+> **Summary of the result.** Soft voting did **not** give a consistent improvement: it helped on Snow100K-L
 > (+0.32 dB PSNR) but was slightly worse on Test1 (-0.28 dB) and RainDrop (-0.09 dB) and indistinguishable on Snow100K-S;
-> the mean change over the four test sets is -0.03 dB. Details and caveats are in section 6.
+> the mean change over the four test sets is -0.03 dB. Details and scope are in section 6.
 
 ---
 
@@ -31,11 +31,11 @@ Why we expect it to help (a hypothesis we test, not an assumption):
 * Verified numerically in [`settingI/tests/test_soft_vote.py`](settingI/tests/test_soft_vote.py): sweeping the
   orientation of a synthetic edge, the largest histogram change between neighbouring angles is **2.000 (hard) vs
   0.005 (soft)**, and `|dLoss/dtheta|` is **0 (hard) vs 1.432 = B/2pi (soft)**.
-* With the flag off the model is **bit-identical** to the original code (checked: max output difference 0.0).
+* With the flag off the model gives identical outputs to the original code (checked on CPU: max output difference 0.0).
 
 The one-page report is in [`report/main.tex`](report/main.tex).
 
-**Important scope notes (deviations from the paper):**
+**Scope notes (deviations from the paper):**
 
 * Training is **shortened to 12,000 iterations** on **64x64 crops, batch 8** (the released config uses 300k
   iterations with progressive patch sizes up to 400x400) because we only had free Colab/Kaggle T4 GPUs. Absolute
@@ -46,17 +46,18 @@ The one-page report is in [`report/main.tex`](report/main.tex).
 
 ## 2. Environment and dependencies
 
-* **Hardware used:** NVIDIA T4 (16 GB) on Google Colab (baseline, iterations 0-10k) and Kaggle (T4 x2, only one GPU
-  used; baseline 10k-12k, proposed model, evaluation). Training needs about 9.4 GB of GPU memory at batch 8 / 64x64.
+* **Hardware used:** NVIDIA T4 (16 GB) on Google Colab (baseline, iterations 0-10k) and Kaggle (T4 x2 with only one GPU
+  used; 29 GB RAM, 57 GB disk; baseline 10k-12k, proposed model, evaluation). Training needs about 9.4 GB of GPU memory at batch 8 / 64x64.
   About 0.9-1 s per iteration; the proposed run took 3 h 03 min of training (3:03:02 in its log) plus 4 RainDrop validations of about 2.6 min each.
-* **Software:** PyTorch 2.11.0 (CUDA 13.0 build) and TorchVision 0.26.0, as recorded in both training logs (Colab and Kaggle used the same
-  versions), BasicSR 1.2.0, plus the other packages in [`requirements.txt`](requirements.txt) (not pinned; Python 3.10+).
-  `torch`/`torchvision` are intentionally not in that file: install the CUDA build for your machine.
+* **Software:** Python 3.10+ (the Colab/Kaggle default; exact patch version not recorded), PyTorch 2.11.0 (CUDA 13.0 build) and
+  TorchVision 0.26.0, as recorded in both training logs (Colab and Kaggle used the same versions), BasicSR 1.2.0, plus the other
+  packages in [`requirements.txt`](requirements.txt) (not pinned). `torch`/`torchvision` are intentionally not in that file:
+  install the CUDA build for your machine.
 
 ```bash
 git clone https://github.com/adityaj1706/HOGformer_DLCV.git
 cd HOGformer_DLCV
-pip install torch torchvision                 # skip on Colab/Kaggle (preinstalled)
+pip install torch==2.11.0 torchvision==0.26.0     # skip on Colab/Kaggle (preinstalled)
 pip install -r requirements.txt
 ```
 
@@ -66,12 +67,12 @@ No CUDA extension needs to be built (we run from the source tree: `cd settingI` 
 
 Setting I uses the **All-Weather** composite training set (from TransWeather/Histoformer) and four test sets:
 
-| Split | Content | Pairs |
-|---|---|---|
-| train | All-Weather composite (Snow100K 9,001 / Outdoor-Rain 8,250 / RainDrop 818, by filename) | 18,069 |
-| test | Outdoor-Rain **Test1** | 750 |
-| test | **RainDrop** test_a | 58 |
-| test | **Snow100K-S** / **Snow100K-L** | 16,611 / 16,801 (we score a fixed random subset, see section 5) |
+| Split | Content | Pairs | Source |
+|---|---|---|---|
+| train | All-Weather composite (Snow100K 9,001 / Outdoor-Rain 8,250 / RainDrop 818, by filename) | 18,069 | [Google Drive](https://drive.google.com/file/d/1tfeBnjZX1wIhIFPl6HOzzOKOyo0GdGHl/view) |
+| test | Outdoor-Rain **Test1** | 750 | [Google Drive](https://drive.google.com/file/d/1xgLG6656ahL7TfpeO_TplkMOQrfdxKbo/view) |
+| test | **RainDrop** test_a | 58 | [Google Drive folder](https://drive.google.com/drive/folders/1e7R76s6vwUJxILOcAsthgDLPSnOrQ49K) (DeRaindrop) |
+| test | **Snow100K-S** / **Snow100K-L** | 16,611 / 16,801 (we score a fixed random subset, see section 5) | [Google Drive folder](https://drive.google.com/drive/folders/1kLPWAev5f6OutKFALhxthuO1XCF5U1Yu) (Histoformer mirror) |
 
 One command downloads and arranges everything (about 35 GB of temporary disk, about 15 GB at the end):
 
@@ -96,13 +97,14 @@ data/weather/
   test/Snow100K-Test/Snow100K-{S,L}/{gt,synthetic}/
 ```
 
-The configs read the data from `/content/data/weather/`. To use another location either symlink it
+The training configs read the data from `/content/data/weather/`. To use another location either symlink it
 (`sudo mkdir -p /content && sudo ln -s "$(pwd)/data" /content/data`) or edit the `dataroot_gt` / `dataroot_lq` lines of the YAML.
+(`evaluate.py` takes the location with `--data_root`.)
 
 ## 4. Training instructions
 
-Run from `settingI/`. Both models use the same data, seed (100), schedule and losses (L1 + Pearson + HOG loss);
-**the only difference between the two YAML files is the run name and `soft_vote: true`.**
+Run from `settingI/`, with the data reachable at `/content/data/weather` (see section 3). Both models use the same data, seed (100),
+schedule and losses (L1 + Pearson + HOG loss); **the only difference between the two YAML files is the run name and `soft_vote: true`.**
 
 ```bash
 cd settingI
@@ -132,19 +134,24 @@ every 3,000 iterations; checkpoint every 2,000.
 [`settingI/evaluate.py`](settingI/evaluate.py) scores **every** image of Test1 and RainDrop and a **fixed random subset**
 (seed 0, default 300) of Snow100K-S/-L, with PSNR/SSIM on the Y channel (crop 0), reflect-padding to a multiple of 16, plus
 parameters, FLOPs (fvcore, 128x128; not every op is counted) and latency (one 480x720 image). It saves per-image scores.
+It reports metrics only; it does not write the restored images to disk.
 
 ```bash
+# 0. test data only (skips the 11 GB training set) and the released checkpoints (section 6)
+bash scripts/download_data.sh ./data     # run with SKIP_TRAIN=1 in front to skip the training set
 cd settingI
+# 1. evaluate both models (input: the test sets under --data_root; output: one JSON file per model)
 python evaluate.py --config Allweather/Options/Allweather_HOGformer_baseline.yml \
     --weights ../checkpoints/baseline_net_g_latest.pth --out results_baseline.json --name baseline --data_root ../data/weather
 python evaluate.py --config Allweather/Options/Allweather_HOGformer_softvote.yml \
     --weights ../checkpoints/softvote_net_g_latest.pth --out results_softvote.json --name softvote --data_root ../data/weather
+# 2. paired comparison (reproduces the tables in section 6)
 python compare_results.py results_baseline.json results_softvote.json --md comparison.md
 ```
 
 `compare_results.py` prints the per-dataset PSNR difference (proposed - baseline) with a 95 % paired-bootstrap confidence interval and the
-share of images that improved. Reproduce everything on Kaggle with [`kaggle/hogformer_eval_kaggle.ipynb`](kaggle/hogformer_eval_kaggle.ipynb)
-(about 1-2 h on a T4; inference is about 2.6 s per 480x720 image).
+share of images that improved. Reproduce everything on Kaggle with [`kaggle/hogformer_eval_kaggle.ipynb`](kaggle/hogformer_eval_kaggle.ipynb).
+It took about 1 h per model on a T4 (about 2 h for both; inference is about 2.6 s per 480x720 image).
 Use `--snow_n N` to change the Snow100K subset size and `--datasets test1 raindrop` to restrict the datasets.
 We evaluate the **last** checkpoint (`net_g_latest.pth`, iteration 12,000), not the best-on-test one.
 
@@ -166,7 +173,7 @@ harmless for RainDrop (58 images) but is why `evaluate.py` exists. Unit checks o
 | Evaluation log and per-image results | [`results/logs/eval_stdout.log`](results/logs/eval_stdout.log), [`results/results_baseline.json`](results/results_baseline.json), [`results/results_softvote.json`](results/results_softvote.json) |
 | Configs | [`baseline`](settingI/Allweather/Options/Allweather_HOGformer_baseline.yml), [`softvote`](settingI/Allweather/Options/Allweather_HOGformer_softvote.yml) |
 
-Download and check the released weights, then evaluate them (about 1-2 h on a T4, see section 5):
+Download and check the released weights, then evaluate them (about 2 h on a T4 for both models, see section 5):
 
 ```bash
 mkdir -p checkpoints && cd checkpoints
@@ -206,12 +213,12 @@ Paired per-image PSNR difference, proposed minus baseline (95 % bootstrap CI ove
 | Snow-L (subset) | 300 | +0.322 [+0.269, +0.374] | 78 % |
 
 **Interpretation.** There is no consistent improvement: the mean of the four PSNR deltas is -0.03 dB. Soft voting helps on dense snow
-(Snow-L) and hurts on rain/haze (Test1) and raindrops; SSIM changes by at most +0.004. Parameters are identical, and the measured latency is 3 % lower,
-a difference we did not test against timing noise. The numerical checks in section 1 show the descriptor behaves as designed, so the end metric is
-sensitive to the change but not uniformly positive. A plausible but **untested** explanation: rain streaks give a sharply peaked orientation histogram that hard
-bins already encode stably, and soft voting spreads that peak over two bins; dispersed snow edges may benefit from the smoothing.
-**Caveats:** one training run per model (the intervals capture image sampling, not training-seed variance, so differences of a few tenths of a dB may partly be run-to-run noise),
-a 12k-iteration schedule, and 300-image Snow subsets. FLOPs counted by fvcore (128x128) are 28.86 GMACs for both models (not every op is counted).
+(Snow-L) and hurts on rain/haze (Test1) and raindrops; SSIM changes by at most 0.0042. Parameters are identical and latency is comparable
+(2543 vs 2626 ms). The numerical checks in section 1 show the descriptor behaves as designed, so the metric responds to the change, but not
+uniformly favourably. We hypothesise that rain streaks give a sharply peaked orientation histogram that hard bins already encode stably, and
+soft voting spreads that peak over two bins, whereas the dispersed edges of heavy snow benefit from the smoothing.
+**Scope:** one training run per model (the intervals capture image sampling, not training-seed variance), a 12k-iteration schedule, and 300-image
+Snow subsets. FLOPs counted by fvcore (128x128) are 28.86 GMACs for both models (not every op is counted).
 
 ## 7. Code organization and reproducibility
 
@@ -226,6 +233,7 @@ Files we added or changed (everything else in `settingI/basicsr/` is upstream HO
 | `settingI/basicsr/train.py`, `settingI/basicsr/utils/logger.py` | Logging only: removed duplicated log lines, heartbeat, validation timing. No effect on training. |
 | `scripts/download_data.sh`, `requirements.txt` | Dataset download/arrangement and a Linux dependency list. |
 | `colab/`, `kaggle/`, `report/` | Notebooks used for the runs and the one-page report source. |
+| `results/` | Training and evaluation logs, per-image results (JSON) and the comparison table. |
 
 Reproducibility notes: both runs use `manual_seed: 100` and the same data order. GPU kernels (and `cudnn.benchmark`) are not
 bit-deterministic, so a rerun will differ slightly; one training run per model is a limitation (the confidence intervals above
